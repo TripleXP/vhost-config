@@ -2,9 +2,31 @@
 
 ::Configuration 
 SET filepath_host=C:\Windows\System32\drivers\etc\hosts
-SET filepath_apache=C:\xampp\apache\conf\extra\httpd-vhosts.conf
+SET filepath_apache=D:\xampp\apache\conf\extra\httpd-vhosts.conf
 SET dirpath_vhosts=E:/vhosts/
 
+::First check
+IF "%1%" == "reap" goto RESTART_APACHE
+SHIFT
+
+echo Loading...
+net stop spooler>NUL
+IF NOT %ERRORLEVEL%==0 (
+	goto noadmin
+) ELSE (
+	cls
+	echo Starting...
+	net start spooler>NUL
+	cls
+	goto userselect
+)
+
+:NOADMIN
+cls
+echo Please open this file as ADMIN to continue...
+goto exit
+
+:USERSELECT
 ::Choice
 echo #############################################
 echo                                            ## 							
@@ -22,6 +44,7 @@ echo 2 = Restart Apache                                      ##
 echo (Type in your choice and press enter)                   ##
 echo                                                         ##
 echo ##########################################################
+
 SET /p option=
 
 IF %option% == 0 goto NEWHOST
@@ -33,6 +56,18 @@ cls
 @title = Add a vHost
 echo Enter the name of the host:
 SET /p hostname=
+echo Is there a subfolder named htdocs? (y/n)
+SET /p htdocs=
+
+IF %htdocs%==y (
+	set htdocsactive=/htdocs
+) ELSE (
+	IF %htdocs%==Y (
+		set htdocsactive=/htdocs
+	) ELSE (
+		set htdocsactive=
+	)
+)
 
 echo ^#vHost: %hostname% ^ >> %filepath_host%
 echo 127.0.0.1 %hostname%.local^ >> %filepath_host%
@@ -41,7 +76,7 @@ echo 127.0.0.1 www.%hostname%.local^ >> %filepath_host%
 echo __Written in hosts.dat...
 
 echo ^<VirtualHost *:80^>^ >> %filepath_apache%
-echo  	DocumentRoot %dirpath_vhosts%%hostname%^ >> %filepath_apache%
+echo  	DocumentRoot %dirpath_vhosts%%hostname%%htdocsactive%^ >> %filepath_apache% 
 echo  	ServerName %hostname%.local^ >> %filepath_apache%
 echo  	ServerAlias www.%hostname%.local^ >> %filepath_apache%
 echo ^</VirtualHost^>^ >> %filepath_apache%
