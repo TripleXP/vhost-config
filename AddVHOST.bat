@@ -5,10 +5,6 @@ SET filepath_host=C:\Windows\System32\drivers\etc\hosts
 SET filepath_apache=D:\xampp\apache\conf\extra\httpd-vhosts.conf
 SET dirpath_vhosts=E:/vhosts/
 
-::First check
-IF "%1%" == "reap" goto RESTART_APACHE
-SHIFT
-
 echo Loading...
 net stop spooler>NUL
 IF NOT %ERRORLEVEL%==0 (
@@ -28,8 +24,9 @@ goto exit
 
 :USERSELECT
 ::Choice
+cls
 echo #############################################
-echo                                            ## 							
+echo                                            ##
 echo vHost configuration (by Davide Perozzi)    ##
 echo                                            ##
 echo ###############################            ##
@@ -41,15 +38,24 @@ echo                                                         ##
 echo 0 = Add a new vhost and restart Apache                  ##
 echo 1 = Add a new vhost without restarting Apache           ##
 echo 2 = Restart Apache                                      ##
+echo 3 = List vhosts from apache                             ##
 echo (Type in your choice and press enter)                   ##
 echo                                                         ##
 echo ##########################################################
 
 SET /p option=
 
-IF %option% == 0 goto NEWHOST
-IF %option% == 1 goto NEWHOST
-IF %option% == 2 goto RESTART_APACHE
+IF %option% == 0 ( 
+	goto NEWHOST 
+) ELSE IF %option% == 1 (
+	goto NEWHOST
+) ELSE IF %option% == 2 (
+	goto RESTART_APACHE
+) ELSE IF %option% == 3 (
+	goto LIST_VHOSTS
+) ELSE (
+	goto USERSELECT
+)
 
 :NEWHOST
 cls
@@ -98,6 +104,10 @@ echo Open it in the browser: http://%hostname%.local  ##
 echo                                                  ##
 echo ###################################################
 goto EXIT
+
+:LIST_VHOSTS
+type %filepath_apache%
+PAUSE
 
 :RESTART_APACHE
 cls
