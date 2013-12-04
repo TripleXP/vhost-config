@@ -116,6 +116,8 @@ echo Enter the name of the host:
 SET /p HOSTNAME=
 echo Is there a subfolder named htdocs? (y/n)
 SET /p HTDOCS=
+echo Which port do you want to use? (keep empty for no port support)
+SET /p PORT=
 
 IF %HTDOCS%==y (
 	set HTDOCSACTIVE=/htdocs
@@ -127,20 +129,36 @@ IF %HTDOCS%==y (
 	)
 )
 
+IF NOT "%PORT%"=="" (
+	set PORTACTIVE=y
+) ELSE (
+	set PORTACTIVE=n
+)
+
 cls
 
 echo ##
-echo ^#vHost: %HOSTNAME% ^ >> %FILEPATH_HOSTS%
+echo. >> %FILEPATH_HOSTS%
+echo #vHost: %HOSTNAME% ^ >> %FILEPATH_HOSTS%
 echo 127.0.0.1 %HOSTNAME%.local^ >> %FILEPATH_HOSTS%
 echo 127.0.0.1 www.%HOSTNAME%.local^ >> %FILEPATH_HOSTS%
 
 echo ## Written in %FILEPATH_HOSTS%
 
+echo. >> %FILEPATH_APACHE%
+echo. >> %FILEPATH_APACHE%
+echo ^# %HOSTNAME% >> %FILEPATH_APACHE%
 echo ^<VirtualHost *:80^>^ >> %FILEPATH_APACHE%
 echo  	DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%HTDOCSACTIVE%^ >> %FILEPATH_APACHE% 
 echo  	ServerName %HOSTNAME%.local^ >> %FILEPATH_APACHE%
 echo  	ServerAlias www.%HOSTNAME%.local^ >> %FILEPATH_APACHE%
 echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
+IF %PORTACTIVE%==y (
+	echo ^Listen %PORT% >> %FILEPATH_APACHE%
+	echo ^<VirtualHost *:%PORT%^>^ >> %FILEPATH_APACHE%
+	echo  	DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%HTDOCSACTIVE%^ >> %FILEPATH_APACHE% 	
+	echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
+)
 
 echo ## Written in %FILEPATH_APACHE%
 echo ##
@@ -172,7 +190,7 @@ IF %ERRORLEVEL%==0 (
 	echo Something went wrong. !
 	echo !!!!!!!!!!!!!!!!!!!!!!!
 )
-echo Press a [RANDOM] kex to continue
+echo Press a [RANDOM] key to continue
 PAUSE > NUL
 goto USERSELECT
 
@@ -183,7 +201,7 @@ color 7
 cls
 type %FILEPATH_APACHE%
 echo ---------------------------------
-echo Press a [RANDOM] kex to continue
+echo Press a [RANDOM] key to continue
 PAUSE > NUL
 goto :USERSELECT
 
@@ -196,12 +214,17 @@ echo Stopping service %SERVICE_NAME%
 NET STOP %SERVICE_NAME%
 echo --------------------------------- 
 echo Starting service %SERVICE_NAME%
-NET START %SERVICE_NAME%             
+NET START %SERVICE_NAME%   
 
 IF NOT %OPTION% == 2 (
 	goto SUCCESS_MSG
 ) ELSE (
-	echo Press a [RANDOM] kex to continue
+	IF NOT %ERRORLEVEL% == 0 (
+		color 4
+	) ELSE (
+		color 2
+	)
+	echo Press a [RANDOM] key to continue
 	PAUSE > NUL
 	goto USERSELECT
 )
