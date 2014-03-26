@@ -13,20 +13,23 @@ IF (%1) == () (
 	SET FILEPATH_APACHE=%2\apache\conf\extra\httpd-vhosts.conf
 	SET DIRPATH_VHOSTS=%3/
 	SET SERVICE_NAME=%4
+
 	goto ADMIN_CHECK
 )
 
 :PARA_MSG
 color 3
+@title Error: Parameters not found...
 echo ##
-echo ## Set all parameter paths in the .INK file of this program
+echo ## You have to set all parameters in your shortcut...
 echo ##
 echo ##########################################################
 echo                                                         ##
-echo 1 = hosts.dat in yout windows path (C:\Windows\...)     ##
-echo 2 = your xampp folder (D:\xampp)                        ##
-echo 3 = your vhost folder (E:/vhosts)                       ##
-echo 4 = service name of apache (Apache2.4)                  ##
+echo 1 = Hosts.dat in yout windows path                      ##
+echo 2 = Your xampp folder                                   ##
+echo 3 = Your vhost folder                                   ##
+echo 4 = Service name of apache (example: Apache2.4)         ##
+echo 5 = Extended server alias with given ending (optional)  ##
 echo                                                         ##
 echo ##########################################################
 goto exit
@@ -34,9 +37,15 @@ goto exit
 :ADMIN_CHECK
 @title Loading...
 color 5
+:: GET EXT ALIAS
+IF (%5%) == () (
+	SET ALIAS_EXT=false
+) ELSE (
+	SET ALIAS_EXT=%5%
+)
 echo Loading...
-net stop spooler>NUL
-IF NOT %ERRORLEVEL%==0 (
+net session >nul 2>&1
+IF NOT %errorLevel% == 0 (
 	@title Open as admin again
 	goto noadmin
 ) ELSE (
@@ -152,6 +161,10 @@ echo ^<VirtualHost *:80^>^ >> %FILEPATH_APACHE%
 echo  	DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%HTDOCSACTIVE%^ >> %FILEPATH_APACHE% 
 echo  	ServerName %HOSTNAME%.local^ >> %FILEPATH_APACHE%
 echo  	ServerAlias www.%HOSTNAME%.local^ >> %FILEPATH_APACHE%
+IF NOT %ALIAS_EXT% == false (
+echo 	ServerAlias www.%HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+echo 	ServerAlias %HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+)
 echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
 IF %PORTACTIVE%==y (
 	echo ^Listen %PORT% >> %FILEPATH_APACHE%
