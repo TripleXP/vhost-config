@@ -1,12 +1,12 @@
 @echo off
 
-IF (%1) == () (
+IF (%1) == ("") (
 	goto PARA_MSG
-) ELSE IF (%2) == () (
+) ELSE IF (%2) == ("") (
 	goto PARA_MSG
-) ELSE IF (%3) == () (
+) ELSE IF (%3) == ("") (
 	goto PARA_MSG
-) ELSE IF (%4) == () (
+) ELSE IF (%4) == ("") (
 	goto PARA_MSG
 ) ELSE (
 	SET FILEPATH_HOSTS=%1
@@ -164,6 +164,7 @@ echo  	ServerAlias www.%HOSTNAME%.local^ >> %FILEPATH_APACHE%
 IF NOT %ALIAS_EXT% == false (
 echo 	ServerAlias www.%HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
 echo 	ServerAlias %HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+echo    SetEnv APPLICATION_ENV development >> %FILEPATH_APACHE%
 )
 echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
 IF %PORTACTIVE%==y (
