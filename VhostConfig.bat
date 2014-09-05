@@ -1,0 +1,1 @@
+start D:\vhost-config\pub\AddVHOST-Compiled-1-3-3-7.exe "C:\Windows\System32\drivers\etc\hosts" "D:\xampp" "E:/vhosts" "Apache2.4" "false" "nb177a.emp.nb"

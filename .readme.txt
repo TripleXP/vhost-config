@@ -1,0 +1,2 @@
+Add parameters to the start component
+Paramter: "C:\Windows\System32\drivers\etc\hosts" [hosts for redirects] "D:\xampp" [Xampp folder] "E:/vhosts" [vhost folder] "Apache2.4" [Servicename] "false|true" [Port support activated?] "nb177a.emp.nb" [Alias]
