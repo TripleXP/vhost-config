@@ -13,7 +13,7 @@ IF ("%1") == ("") (
 	SET FILEPATH_APACHE=%~2\apache\conf\extra\httpd-vhosts.conf
 	SET DIRPATH_VHOSTS=%~3/
 	SET SERVICE_NAME=%~4
-	
+
 	goto ADMIN_CHECK
 )
 
@@ -38,13 +38,16 @@ goto exit
 :ADMIN_CHECK
 @title Loading...
 color 5
+
 :: GET EXT ALIAS
-IF (%6) == ("") (
-	SET ALIAS_EXT=false
-) ELSE (
+SET ALIAS_EXT="false"
+
+IF NOT (%6) == ("") (
 	SET ALIAS_EXT=%~6
 )
+
 echo Loading...
+
 net session >nul 2>&1
 IF NOT %errorLevel% == 0 (
 	goto noadmin
@@ -63,10 +66,10 @@ goto exit
 @title Your choice? /by Davide Perozzi
 cls
 color 2
-echo ##                             
-echo ## What would you like to do?  
-echo ##                              
-echo ##########################################################	
+echo ##
+echo ## What would you like to do?
+echo ##
+echo ##########################################################
 echo                                                         ##
 echo  0 = Clone a git repository and #1                      ##
 echo  1 = Add a new vhost and restart Apache                 ##
@@ -80,9 +83,9 @@ echo                                                         ##
 echo ------------------------------------------------------- ##
 echo                                                         ##
 tasklist /FI "IMAGENAME eq httpd.exe" 2>NUL | find /I /N "httpd.exe">NUL
-if "%ERRORLEVEL%"=="0" (
+IF "%ERRORLEVEL%"=="0" (
 echo  Apache is running                                      ##
-) else (
+) ELSE (
 color 8
 echo  Apache is NOT running                                  ##
 )
@@ -96,10 +99,10 @@ echo ##########################################################
 
 SET /p OPTION=
 
-IF %OPTION% == 0 ( 
+IF %OPTION% == 0 (
 	goto GETREP
 ) ELSE IF %OPTION% == 1 (
-	goto NEWHOST 
+	goto NEWHOST
 ) ELSE IF %OPTION% == 2 (
 	goto NEWHOST
 ) ELSE IF %OPTION% == 3 (
@@ -107,7 +110,7 @@ IF %OPTION% == 0 (
 ) ELSE IF %OPTION% == 4 (
 	goto EDIT_VHOSTS
 ) ELSE IF %OPTION% == 5 (
-	goto EDIT_HOSTS	 
+	goto EDIT_HOSTS
 ) ELSE IF %OPTION% == x (
 	exit
 ) ELSE (
@@ -122,7 +125,7 @@ echo Enter the url of your repository:
 SET /p REPOSITORY=
 cls
 echo Enter the name of the repository:
-SET /p HOSTNAME= 
+SET /p HOSTNAME=
 goto CLONEREP
 
 :CLONEREP
@@ -130,7 +133,7 @@ cls
 color 6
 echo Checking out Repository...
 echo --------------------------------------------
-git clone %REPOSITORY% %DIRPATH_VHOSTS%%HOSTNAME% 
+git clone %REPOSITORY% %DIRPATH_VHOSTS%%HOSTNAME%
 echo --------------------------------------------
 echo.
 IF EXIST %DIRPATH_VHOSTS%%HOSTNAME%/.gitmodules (
@@ -144,7 +147,7 @@ echo Installing composer components
 echo --------------------------------------------
 cd /D %DIRPATH_VHOSTS%%HOSTNAME%
 composer install
-echo --------------------------------------------	
+echo --------------------------------------------
 )
 echo.
 IF %ERRORLEVEL% == 0 (
@@ -167,7 +170,7 @@ goto NEWHOST
 :EDIT_VHOSTS
 @title Edit: %FILEPATH_APACHE%
 notepad %FILEPATH_APACHE%
-cls 
+cls
 echo Restart apache now? (y/n)
 SET /p RESTART_APACHE_EDIT=
 
@@ -192,8 +195,8 @@ cls
 @title Register a new vhost
 color 5
 IF "%HOSTNAME%"=="" (
-echo Enter the name of the host:
-SET /p HOSTNAME=
+	echo Enter the name of the host:
+	SET /p HOSTNAME=
 )
 
 IF EXIST %DIRPATH_VHOSTS%%HOSTNAME%/htdocs/ (
@@ -202,15 +205,15 @@ IF EXIST %DIRPATH_VHOSTS%%HOSTNAME%/htdocs/ (
 	SET SUBDIR=Web
 ) ELSE IF EXIST %DIRPATH_VHOSTS%%HOSTNAME%/public/ (
 	SET SUBDIR=public
-) ELSE (
-IF "%SUBDIR%"=="" (
-echo Subdirectory (relative from root, e.g. htdocs or leave empty)
-SET /p SUBDIR=
 )
+
+IF "%SUBDIR%"=="" (
+	echo Subdirectory (relative from root, e.g. htdocs or leave empty^)
+	SET /p SUBDIR=
 )
 
 IF (%5) == ("") (
-	SET PORTACTIVE=false 
+	SET PORTACTIVE=false
 ) ELSE IF (%5)==("true") (
 	SET PORTACTIVE=true
 ) ELSE (
@@ -218,11 +221,11 @@ IF (%5) == ("") (
 )
 
 IF "%PORTACTIVE%"=="true" (
-IF "%PORT%"=="" (
-echo Which port do you want to use? (leave empty for support)
-SET /p PORT=
+	IF "%PORT%"=="" (
+		echo Which port do you want to use? (or leave empty)
+		SET /p PORT=
+	)
 )
-)	
 
 IF NOT "%PORT%"=="" (
 	SET PORTACTIVE=y
@@ -231,7 +234,7 @@ IF NOT "%PORT%"=="" (
 )
 
 IF "%SUBDIR%"=="" (
-	SET SUBDIRPATH=""
+	SET "SUBDIRPATH="
 ) ELSE (
 	IF NOT "%SUBDIR:~0,1%"=="/" (
 		SET SUBDIRPATH=/%SUBDIR%
@@ -241,6 +244,8 @@ IF "%SUBDIR%"=="" (
 )
 
 cls
+
+:: Write the vhost configuration options
 
 echo ##
 echo. >> %FILEPATH_HOSTS%
@@ -254,26 +259,31 @@ echo. >> %FILEPATH_APACHE%
 echo. >> %FILEPATH_APACHE%
 echo ^# %HOSTNAME% >> %FILEPATH_APACHE%
 echo ^<VirtualHost *:80^>^ >> %FILEPATH_APACHE%
-echo  	DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%SUBDIRPATH%^ >> %FILEPATH_APACHE% 
-echo  	ServerName %HOSTNAME%.local^ >> %FILEPATH_APACHE%
-echo  	ServerAlias www.%HOSTNAME%.local^ >> %FILEPATH_APACHE%
-IF NOT %ALIAS_EXT% == false (
-echo 	ServerAlias www.%HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
-echo 	ServerAlias %HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+echo    DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%SUBDIRPATH%^ >> %FILEPATH_APACHE%
+echo    ServerName %HOSTNAME%.local^ >> %FILEPATH_APACHE%
+echo    ServerAlias www.%HOSTNAME%.local^ >> %FILEPATH_APACHE%
 echo    SetEnv APPLICATION_ENV development >> %FILEPATH_APACHE%
+
+IF NOT "%ALIAS_EXT%"=="false" (
+	IF NOT "%ALIAS_EXT%"=="" (
+		echo    ServerAlias www.%HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+		echo    ServerAlias %HOSTNAME%.%ALIAS_EXT% >> %FILEPATH_APACHE%
+	)
 )
+
 echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
+
 IF %PORTACTIVE%==y (
 	echo ^Listen %PORT% >> %FILEPATH_APACHE%
 	echo ^<VirtualHost *:%PORT%^>^ >> %FILEPATH_APACHE%
-	echo  	DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%SUBDIRPATH%^ >> %FILEPATH_APACHE% 	
+	echo      DocumentRoot %DIRPATH_VHOSTS%%HOSTNAME%%SUBDIRPATH%^ >> %FILEPATH_APACHE%
 	echo ^</VirtualHost^>^ >> %FILEPATH_APACHE%
 )
 
 echo ## Written in %FILEPATH_APACHE%
 echo ##
 
-:: Reset vars
+:: Reset vars after the options were written
 SET "HOSTNAME="
 SET "PORT="
 
@@ -295,7 +305,7 @@ IF %ERRORLEVEL%==0 (
 	IF %OPTION% == 2 (
 	echo Restart apache and the vhost will be available   ##
 	) ELSE (
-	echo The new vhost is now available                   ##  
+	echo The new vhost is now available                   ##
 	)
 	echo                                                  ##
 	echo ###################################################
@@ -321,9 +331,9 @@ echo ---------------------------------
 )
 echo Stopping service %SERVICE_NAME%
 NET STOP %SERVICE_NAME%
-echo --------------------------------- 
+echo ---------------------------------
 echo Starting service %SERVICE_NAME%
-NET START %SERVICE_NAME%   
+NET START %SERVICE_NAME%
 
 IF NOT %OPTION% == 3 (
 	goto SUCCESS_MSG
@@ -339,7 +349,7 @@ IF NOT %OPTION% == 3 (
 )
 
 :EXIT
-@title Press a random key to exit                               
+@title Press a random key to exit
 echo --------------------------------
 echo Press a [RANDOM] key to exit
 PAUSE > NUL
